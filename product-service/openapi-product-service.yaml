@@ -1,0 +1,119 @@
+openapi: 3.0.3
+
+info:
+  title: product-service
+  version: 1.0.0
+  contact:
+    name: Michael Markeev
+    url: https://github.com/IDiamondDragon/nodejs-aws-shop-be
+
+servers:
+  - url: https://jj5ok3shmg.execute-api.eu-west-1.amazonaws.com/dev/
+
+paths:
+
+  /products:
+    get:
+      operationId: getProductsListGet
+      tags:
+        - Product Service
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      operationId: getProductsListPost
+      tags:
+        - Product Service
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+  /products/{productId}:
+    get:
+      operationId: getProductById
+      tags:
+        - Product Service
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+
+  schemas:
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        count:
+          type: number
+      required:
+        - title
+
+    HttpError:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+  responses:
+
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HttpError'
+
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HttpError'
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HttpError'

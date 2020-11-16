@@ -1,3 +1,4 @@
+import { S3EventRecord } from 'aws-lambda';
 import { S3 } from 'aws-sdk';
 const csvParser = require('csv-parser');
 
@@ -24,7 +25,7 @@ export class S3Service {
         return this.s3.getSignedUrlPromise('putObject', params);
     }
 
-    parseFiles(files: any, sourceFolder: string, destinationFolder: string) {
+    parseFiles(files: S3EventRecord[], sourceFolder: string, destinationFolder: string) {
 
         files.forEach( (record) => {
         console.log("record: ", record);

@@ -1,7 +1,8 @@
+import { S3Handler } from 'aws-lambda';
 import 'source-map-support/register';
 import { S3Service } from '../services/s3.service';
 
-export const importFileParser = (event: any, _context) => {
+export const importFileParser: S3Handler = (event, _context) => {
   console.log("event: ", event);
 
   try {

@@ -29,12 +29,26 @@ export abstract class DataBaseService {
         }
     }
 
-    protected async connect() {
-        await this.client.connect();
+    protected async connect(): Promise<void> {
+        return await this.client.connect().then(
+            () => { console.log("Connected!"); },
+            (err) => {
+                if(err) {
+                    console.log("Connection: ", err);
+                }
+            }
+        );
     }
 
-    protected async disconnect() {
-        await this.client.end();
+    protected async disconnect(): Promise<void> {
+        return await this.client.end().then(
+            () => { console.log("Disconnect!"); },
+            (err) => {
+                if(err) {
+                    console.log("Connection: ", err);   
+                }
+            }
+        );
     }
     
     protected async beginTransaction() {       
@@ -52,7 +66,7 @@ export abstract class DataBaseService {
         try {
 
             await this.query('COMMIT', null, false);
-
+            console.log('Commited transaction');
         } catch(error) {
             console.error('Error committing transaction: ', error.stack);
             throw error;
@@ -66,7 +80,7 @@ export abstract class DataBaseService {
             try {
 
                 await this.query('ROLLBACK', null, false);
-
+                console.log('Rolled back transaction');
             } catch(error) {
                 console.error('Error rolling back client', error.stack);
                 throw error;

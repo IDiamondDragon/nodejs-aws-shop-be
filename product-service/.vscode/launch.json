@@ -9,6 +9,15 @@
       "args": ["offline"],
       "port": 9229,
       "console": "integratedTerminal"
+    },
+    {
+      "name": "run catalogBatchProcess function",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/serverless/bin/serverless",
+      // "args": ["offline"],
+      "args": ["invoke", "local", "-f", "catalogBatchProcess"],
+      "console": "integratedTerminal"
     }
   ]
 }

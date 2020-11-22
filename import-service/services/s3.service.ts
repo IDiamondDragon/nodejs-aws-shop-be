@@ -1,5 +1,8 @@
 import { S3EventRecord } from 'aws-lambda';
 import { S3 } from 'aws-sdk';
+import { v4 as uuidv4 } from 'uuid';
+import { Product } from '../../product-service/interfaces/product';
+import { SQSService } from './sqs.service';
 const csvParser = require('csv-parser');
 
 export class S3Service {
@@ -9,7 +12,9 @@ export class S3Service {
 
     constructor() {
         this.s3 = new S3({
-            region: "eu-west-1"
+            region: "eu-west-1",
+            // accessKeyId: process.env.ACCESS_KEY_ID,
+            // secretAccessKey: process.env.SECRET_ACCESS_KEY,
           });
     }
 
@@ -26,6 +31,7 @@ export class S3Service {
     }
 
     parseFiles(files: S3EventRecord[], sourceFolder: string, destinationFolder: string) {
+        const sqs = new SQSService();
 
         files.forEach( (record) => {
         console.log("record: ", record);
@@ -39,8 +45,11 @@ export class S3Service {
             .on('error', function(error) {
                 console.error(error);
             })
-            .on('data', (data) => {
-                console.log(data);
+            .on('data', (product: Product) => {
+                console.log(product);
+                console.log(process.env.SQS_URL);
+
+                sqs.sendMessageProduct(product);
             })
             .on('end', async () => {
                 console.log('Copy from ' + this.BUCKET + '/' + record.s3.object.key);

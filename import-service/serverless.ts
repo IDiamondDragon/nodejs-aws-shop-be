@@ -1,4 +1,6 @@
 import type { Serverless } from 'serverless/aws';
+import { config } from './config/environments';
+
 
 const serverlessConfiguration: Serverless = {
   service: {
@@ -27,8 +29,9 @@ const serverlessConfiguration: Serverless = {
     },
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',
-      ACCESS_KEY_ID: '${file(config/environments.json):ACCESS_KEY_ID}',
-      SECRET_ACCESS_KEY: '${file(config/environments.json):SECRET_ACCESS_KEY}',
+      ACCESS_KEY_ID: config.ACCESS_KEY_ID,
+      SECRET_ACCESS_KEY: config.SECRET_ACCESS_KEY,
+      SQS_URL: config.SQS_QUEUE_URL
     },
     iamRoleStatements: [
       {
@@ -38,8 +41,23 @@ const serverlessConfiguration: Serverless = {
       },
       {
         Effect: "Allow",
+        Action: "s3:GetObject",
+        Resource: "arn:aws:s3:::import-service-s3-bucket"
+      },
+      {
+        Effect: "Allow",
+        Action: "s3:PutObject",
+        Resource: "arn:aws:s3:::import-service-s3-bucket"
+      },
+      {
+        Effect: "Allow",
         Action: "s3:*",
         Resource: "arn:aws:s3:::import-service-s3-bucket/*"
+      },
+      {
+        Effect: "Allow",
+        Action: "sqs:*",
+        Resource: config.SQS_QUEUE_ARN
       }
     ]
   },
@@ -69,11 +87,11 @@ const serverlessConfiguration: Serverless = {
         {
           s3: {
             bucket: 'import-service-s3-bucket',
-            event: 's3:ObjectCreated:*',
+            event: 's3:ObjectCreated:Put',
             rules: [
               {
-                suffix: '',
-                prefix: 'uploaded/'
+                suffix: '.csv',
+                prefix: 'uploaded'
               }
             ],
             existing: true         

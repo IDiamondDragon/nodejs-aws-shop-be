@@ -17,7 +17,7 @@ const serverlessConfiguration: Serverless = {
     }
   },
   // Add the serverless-webpack plugin
-  plugins: ['serverless-webpack'],
+  plugins: ['serverless-webpack', 'serverless-pseudo-parameters'],
   provider: {
     name: 'aws',
     runtime: 'nodejs12.x',
@@ -76,6 +76,13 @@ const serverlessConfiguration: Serverless = {
                   name: true
                 }
               }
+            },
+            authorizer: {
+              name: "tokenAuthorizer",
+              arn: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authorization-service-dev-basicAuthorizer",
+              resultTtlInSeconds: 0,
+              identitySource: "method.request.header.Authorization",
+              type: "token"
             }
           }
         }
@@ -98,6 +105,36 @@ const serverlessConfiguration: Serverless = {
           }
         }
       ]
+    }
+  },
+  resources: {
+    Resources: {
+      GatewayResponseDenied: {
+        Type: "AWS::ApiGateway::GatewayResponse",
+        Properties: {
+          ResponseParameters: {
+            "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+            "gatewayresponse.header.Access-Control-Allow-Headers": "'*'"
+          },
+          ResponseType: "ACCESS_DENIED",
+          RestApiId: {
+            "Ref": "ApiGatewayRestApi"
+          }
+        }
+      },
+      GatewayResponseUnauthorized: {
+        Type: "AWS::ApiGateway::GatewayResponse",
+        Properties: {
+          ResponseParameters: {
+            "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+            "gatewayresponse.header.Access-Control-Allow-Headers": "'*'"
+          },
+          ResponseType: "UNAUTHORIZED",
+          RestApiId: {
+            "Ref": "ApiGatewayRestApi"
+          }
+        }
+      }
     }
   }
 }

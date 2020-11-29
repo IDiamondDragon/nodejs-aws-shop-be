@@ -262,7 +262,8 @@ const serverlessConfiguration: Serverless = {
         Type: 'AWS::SQS::Queue',
         Properties: {
           QueueName: 'catalog-items-queue.fifo',
-          FifoQueue: true
+          FifoQueue: true,
+          ReceiveMessageWaitTimeSeconds: 1 //need to test
         }
       },
       SNSTopic: {

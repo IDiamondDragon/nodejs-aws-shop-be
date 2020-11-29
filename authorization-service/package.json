@@ -1,21 +1,16 @@
 {
-  "name": "import-service",
+  "name": "authorization-service",
   "version": "1.0.0",
   "description": "Serverless webpack example using Typescript",
   "main": "handler.js",
   "scripts": {
-    "test": "jest"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@types/jest": "^26.0.15",
-    "aws-sdk": "^2.788.0",
-    "aws-sdk-mock": "^5.1.0",
-    "csv-parser": "^2.3.3",
-    "jest": "^26.6.3",
-    "serverless-pseudo-parameters": "^2.5.0",
-    "source-map-support": "^0.5.10",
-    "ts-jest": "^26.4.4",
-    "uuid": "^8.3.1"
+    "aws-sdk": "^2.798.0",
+    "serverless": "^2.12.0",
+    "serverless-dotenv-plugin": "^3.1.0",
+    "source-map-support": "^0.5.10"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.17",

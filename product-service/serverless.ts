@@ -101,8 +101,30 @@ const serverlessConfiguration: Serverless = {
       PG_PORT: '${file(config/environments.json):PG_PORT}',
       PG_DATABASE: '${file(config/environments.json):PG_DATABASE}',
       PG_USERNAME: '${file(config/environments.json):PG_USERNAME}',
-      PG_PASSWORD: '${file(config/environments.json):PG_PASSWORD}'
+      PG_PASSWORD: '${file(config/environments.json):PG_PASSWORD}',
+      SNS_ARN: {
+        Ref: 'SNSTopic'
+      },
+      SQS_URL: {
+        Ref: 'SQSQueue'
+      }
     },
+    iamRoleStatements: [
+      {
+        Effect: "Allow",
+        Action: "sqs:*",
+        Resource: {
+          'Fn::GetAtt': ['SQSQueue', 'Arn'] 
+        }
+      },
+      {
+        Effect: "Allow",
+        Action: "sns:*",
+        Resource: {
+          Ref: 'SNSTopic'
+        }
+      }
+    ]
   },
   functions: {
     addProduct: {
@@ -219,8 +241,71 @@ const serverlessConfiguration: Serverless = {
           }
         }
       ]
+    },
+    catalogBatchProcess: {
+      handler: 'handler.catalogBatchProcess',
+      events: [
+        {
+          sqs: {
+            batchSize: 5,
+            arn: {
+              'Fn::GetAtt': ['SQSQueue', 'Arn']
+            }      
+          }
+        }
+      ]
     }
-  }
+  },
+  resources: {
+    Resources: {
+      SQSQueue: {
+        Type: 'AWS::SQS::Queue',
+        Properties: {
+          QueueName: 'catalog-items-queue.fifo',
+          FifoQueue: true
+        }
+      },
+      SNSTopic: {
+        Type: 'AWS::SNS::Topic',
+        Properties: {
+          TopicName: 'create-product-topic',
+        }
+      },
+      SNSSubscription: {
+        Type: 'AWS::SNS::Subscription',
+        Properties: {
+          Endpoint: 'diamonddragontp@gmail.com',
+          Protocol: 'email',
+          TopicArn: {
+            Ref: 'SNSTopic'
+          },
+          FilterPolicy: {
+            "price": [
+              "10",
+              "2",
+              "4"
+            ]
+          }
+        }
+      },
+      SNSSubscription2: {
+        Type: 'AWS::SNS::Subscription',
+        Properties: {
+          Endpoint: 'michaelmarkeevaws@gmail.com',
+          Protocol: 'email',
+          TopicArn: {
+            Ref: 'SNSTopic'
+          },
+          FilterPolicy: {
+            "price": [
+              "25",
+              "0"
+            ]
+          }
+        }
+      }
+    }
+  },
 }
 
 module.exports = serverlessConfiguration;

@@ -1,5 +1,6 @@
 import { DataBaseService } from './database.service';
 import { Product } from '../interfaces/product';
+import { SNSService } from '../services/sns.service';
 
 export class ProductService extends DataBaseService {
 
@@ -28,29 +29,74 @@ export class ProductService extends DataBaseService {
         return null;
     }
 
-    public async addProduct(product: Product): Promise<Product> {
+    public async addProduct(product: Product, connect: boolean = true): Promise<Product> {
 
         try {
-            await this.connect();
+            if (connect) {
+                await this.connect();
+            }
+
             await this.beginTransaction();
 
+            if (!product.price && product.price != 0) {
+                product.price = 0;
+            }
+
+            if (!product.count && product.count != 0) {
+                product.count = 0;
+            }
+
             const ids = await this.query(`INSERT INTO product(title, description, price) VALUES($1, $2, $3) RETURNING id`,
-                                          [product.title, product.description, product.price], false);
+                                          [product.title, product.description, Number(product.price)], false);
 
             console.log("ids: ", ids);   
             product.id = ids[0].id;
                           
             await this.query(`INSERT INTO stock(product_id, count) VALUES ($1, $2)`,
-                             [product.id, product.count], false);
+                             [product.id, Number(product.count)], false);
 
             await this.commitTransaction();
 
-            return product;
+
         } catch (error) {
-            this.rollbackTransaction(error);
+            await this.rollbackTransaction(error);            
             throw error;
         } finally {
-            this.disconnect();
-        }                        
+            if (connect) {
+                await this.disconnect();
+            }
+        }
+        
+        if (connect) {
+            await this.disconnect();
+        }
+        // await this.disconnect();
+        return product;
+    }
+
+    public async catalogBatchProcess(products: Product[]) {
+        const snsService = new SNSService();
+
+        await this.connect();
+        console.log("catalogBatchProcess products: ", products);
+        await Promise.all(
+                products.map(async (product, index) => {
+
+                try {
+                    console.log("catalogBatchProcess in forEach: ", products);
+                    await this.addProduct(product, false);
+                    
+                    snsService.publishMessageProduct(product);
+
+                    if (index === products.length - 1) {
+                        await this.disconnect();
+                    }
+                } catch (error) {
+                    console.log("Hasn't added product: ", product);
+                    console.log(error);
+                } 
+            }   
+            )
+        );
     }
 }

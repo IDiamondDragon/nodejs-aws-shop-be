@@ -1,0 +1,14 @@
+# package directories
+/node_modules
+
+# .env
+.env
+
+.vscode
+.vscode/*
+
+environments.ts
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
